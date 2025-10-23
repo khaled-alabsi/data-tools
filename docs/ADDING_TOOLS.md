@@ -341,13 +341,14 @@ import { IconName } from 'lucide-react';
 Before submitting your tool:
 
 - [ ] Component created in `src/tools/your-tool-name/`
+- [ ] NO SHARED COMPONENT LOGIC WITH OTHER TOOLS (all logic within the tool component)
 - [ ] Styles follow theme guidelines
 - [ ] Tool registered in `src/config/tools.js`
 - [ ] Responsive design tested (mobile, tablet, desktop)
 - [ ] All interactive elements are keyboard accessible
 - [ ] No console errors or warnings
 - [ ] Tool works with production build (`npm run build`)
-
+  
 ---
 
 Happy coding! We're excited to see what you build!

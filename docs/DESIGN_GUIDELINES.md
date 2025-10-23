@@ -498,6 +498,7 @@ Always wrap charts in `ResponsiveContainer`:
 6. **Consider accessibility** in every design decision
 7. **Use existing components** whenever possible
 8. **Document custom patterns** if you create something new
+9. **Correct positioning for configuration** some configurations (not all) should be close to the plot they affect, so the user can configure and see the effect in the same view without scrolling back and forth.
 
 ## Need Help?
 

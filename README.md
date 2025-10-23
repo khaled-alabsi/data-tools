@@ -48,47 +48,7 @@ The built files will be in the `dist` directory.
 
 ## Available Tools
 
-### Normal Distribution Explorer
-
-Explore and visualize normal (Gaussian) distributions with interactive controls:
-- 1D and 2D distribution visualization
-- Multiple distribution comparison
-- Random sample generation
-- Statistical analysis
-- Correlation exploration
-
-## Project Structure
-
-```
-data-tools/
-├── .github/
-│   └── workflows/
-│       └── deploy.yml          # GitHub Actions deployment
-├── public/                     # Static assets
-├── src/
-│   ├── components/             # Reusable UI components
-│   │   ├── Button.jsx
-│   │   ├── Card.jsx
-│   │   ├── Input.jsx
-│   │   ├── Header.jsx
-│   │   ├── Home.jsx           # Landing page
-│   │   └── ToolCard.jsx
-│   ├── config/
-│   │   ├── theme.js           # Theme configuration
-│   │   └── tools.js           # Tool registry
-│   ├── styles/
-│   │   └── index.css          # Global styles
-│   ├── tools/                 # Tool implementations
-│   │   └── normal-distribution/
-│   │       ├── NormalDistribution.jsx
-│   │       └── NormalDistribution.css
-│   ├── App.jsx                # Main app component
-│   └── main.jsx              # Entry point
-├── index.html
-├── package.json
-├── vite.config.js
-└── README.md
-```
+See available tools listed in the file [Tools.md](./Tools.md)
 
 ## Documentation
 
@@ -121,14 +81,6 @@ The site automatically deploys to GitHub Pages when changes are pushed to the `m
 2. Push to the `main` branch
 3. GitHub Actions will automatically build and deploy
 
-### Custom Domain Setup
-
-To use a custom domain (data-tools.alabsi.space):
-
-1. Add a CNAME record pointing to `yourusername.github.io`
-2. Enable custom domain in GitHub Pages settings
-3. Wait for DNS propagation
-
 ## Technologies Used
 
 - **React 18** - UI library
@@ -138,26 +90,6 @@ To use a custom domain (data-tools.alabsi.space):
 - **Lucide React** - Icon library
 - **GitHub Actions** - CI/CD
 
-## Contributing
-
-Contributions are welcome! Please follow these steps:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-tool`)
-3. Follow the [tool development guide](./docs/ADDING_TOOLS.md)
-4. Ensure your code follows the [design guidelines](./docs/DESIGN_GUIDELINES.md)
-5. Commit your changes (`git commit -m 'Add amazing tool'`)
-6. Push to the branch (`git push origin feature/amazing-tool`)
-7. Open a Pull Request
-
 ## License
 
 MIT License - feel free to use this project for your own purposes.
-
-## Support
-
-For issues, questions, or suggestions, please open an issue on GitHub.
-
----
-
-Built with ❤️ using React and Vite
