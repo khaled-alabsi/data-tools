@@ -1,10 +1,11 @@
 // Tools Registry
 // Add your tools here to register them in the landing page
 
-import { Activity } from 'lucide-react';
+import { Activity, Layers } from 'lucide-react';
 
 // Import tool components here
 import NormalDistribution from '../tools/normal-distribution/NormalDistribution';
+import EllipticalDistribution from '../tools/elliptical-distribution/EllipticalDistribution';
 
 // Tool Registry
 // Each tool should have:
@@ -27,6 +28,16 @@ export const tools = [
     component: NormalDistribution,
     category: 'statistics',
     tags: ['statistics', 'probability', 'distribution', 'visualization', 'gaussian'],
+  },
+  {
+    id: 'elliptical-distribution',
+    name: 'Elliptical Distribution Explorer for MSPC',
+    description: 'Interactive tool for exploring elliptical distributions with multivariate statistical process control. Visualize density functions, KDE, marginal distributions, and Hotelling T² monitoring.',
+    icon: Layers,
+    path: '/tools/elliptical-distribution',
+    component: EllipticalDistribution,
+    category: 'statistics',
+    tags: ['statistics', 'multivariate', 'mspc', 'elliptical', 'hotelling', 'mahalanobis', 'spc', 'quality-control'],
   },
   // Add more tools here as they are developed
   // Example:
