@@ -1,32 +1,73 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import Card from '../../components/Card';
 import Button from '../../components/Button';
-import { TrendingDown, TrendingUp, Calculator, AlertCircle, CheckCircle2, Plus, Minus, Info } from 'lucide-react';
+import { TrendingDown, TrendingUp, AlertCircle, CheckCircle2, Plus, Minus, Info, Copy, Share2 } from 'lucide-react';
 import './CostAveraging.css';
 
+// Generate random starting values
+const generateRandomValues = () => {
+  const shares = Math.floor(Math.random() * (5000 - 100) + 100);
+  const currentPrice = Number((Math.random() * (100 - 1) + 1).toFixed(2));
+  const targetPrice = Number((currentPrice * (0.7 + Math.random() * 0.25)).toFixed(2));
+
+  return {
+    shares,
+    currentPrice,
+    targetPrice,
+  };
+};
+
 const CostAveraging = () => {
-  // Input states
-  const [currentShares, setCurrentShares] = useState(1030);
-  const [currentPrice, setCurrentPrice] = useState(5.53);
-  const [targetPrice, setTargetPrice] = useState(5.00);
+  // Generate random initial values
+  const [initialValues] = useState(() => generateRandomValues());
+
+  // Input states with random initial values
+  const [currentShares, setCurrentShares] = useState(initialValues.shares);
+  const [currentPrice, setCurrentPrice] = useState(initialValues.currentPrice);
+  const [targetPrice, setTargetPrice] = useState(initialValues.targetPrice);
   const [newPrice, setNewPrice] = useState(0);
   const [currency, setCurrency] = useState('€');
 
-  // Initialize smart default price (25% less than current price)
+  // Track if user has manually edited the new price
+  const [hasEditedNewPrice, setHasEditedNewPrice] = useState(false);
+
+  // Initialize smart default price (25% less than current price) only once
   useEffect(() => {
-    if (newPrice === 0) {
+    if (newPrice === 0 && !hasEditedNewPrice) {
       setNewPrice(Number((currentPrice * 0.75).toFixed(2)));
     }
-  }, [currentPrice, newPrice]);
+  }, [currentPrice, newPrice, hasEditedNewPrice]);
 
-  // Update smart default when current price changes
+  // Update smart default when current price changes, but only if user hasn't edited it
   useEffect(() => {
-    setNewPrice(Number((currentPrice * 0.75).toFixed(2)));
-  }, [currentPrice]);
+    if (!hasEditedNewPrice) {
+      setNewPrice(Number((currentPrice * 0.75).toFixed(2)));
+    }
+  }, [currentPrice, hasEditedNewPrice]);
 
-  // Smart price adjustment functions
-  const adjustNewPrice = (amount) => {
-    setNewPrice(prev => Math.max(0.01, Number((prev + amount).toFixed(2))));
+  // Smart increment/decrement based on decimal places
+  const getSmartIncrement = (value) => {
+    const strValue = value.toString();
+    if (!strValue.includes('.')) {
+      return 1; // No decimal, increment by 1
+    }
+    const decimals = strValue.split('.')[1].length;
+    if (decimals === 1) return 0.1;
+    if (decimals === 2) return 0.01;
+    return 0.001; // 3 or more decimals
+  };
+
+  // Smart adjust function
+  const smartAdjust = (value, setValue, isIncrease) => {
+    const increment = getSmartIncrement(value);
+    const newValue = isIncrease ? value + increment : value - increment;
+    setValue(Number(Math.max(0.001, newValue).toFixed(3)));
+  };
+
+  // Handle new price change
+  const handleNewPriceChange = (value) => {
+    setNewPrice(value);
+    setHasEditedNewPrice(true);
   };
 
   // Calculate results
@@ -115,6 +156,59 @@ const CostAveraging = () => {
     };
   }, [currentShares, currentPrice, targetPrice, newPrice]);
 
+  // Copy to clipboard function
+  const copyToClipboard = () => {
+    if (!calculation.valid) return;
+
+    const text = `Portfolio Averaging Tool - Results
+
+Current Position:
+• Shares: ${currentShares.toLocaleString()}
+• Average Price: ${currency}${currentPrice.toFixed(2)}
+• Total Investment: ${currency}${calculation.currentInvestment.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+
+Action Required:
+• Buy ${calculation.newSharesNeeded.toLocaleString()} shares
+• At ${currency}${newPrice.toFixed(2)} per share
+• Additional Investment: ${currency}${calculation.newInvestment.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+
+Final Position:
+• Total Shares: ${calculation.totalShares.toLocaleString()}
+• Final Average Price: ${currency}${calculation.finalAveragePrice.toFixed(2)}
+• Total Investment: ${currency}${calculation.totalInvestment.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+• Price Change: ${calculation.priceChangePercent > 0 ? '+' : ''}${calculation.priceChangePercent.toFixed(2)}%
+
+${calculation.isAveragingDown ? '📉 Averaging Down' : '📈 Averaging Up'}`;
+
+    navigator.clipboard.writeText(text).then(() => {
+      alert('Results copied to clipboard!');
+    }).catch(() => {
+      alert('Failed to copy to clipboard');
+    });
+  };
+
+  // Share function
+  const shareResults = async () => {
+    if (!calculation.valid) return;
+
+    const text = `I need to buy ${calculation.newSharesNeeded.toLocaleString()} shares at ${currency}${newPrice.toFixed(2)} to reach my target average of ${currency}${calculation.finalAveragePrice.toFixed(2)}`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Portfolio Averaging Results',
+          text: text,
+        });
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          copyToClipboard();
+        }
+      }
+    } else {
+      copyToClipboard();
+    }
+  };
+
   return (
     <div className="cost-averaging">
       <div className="container">
@@ -153,28 +247,64 @@ const CostAveraging = () => {
 
             <div className="compact-row">
               <label className="compact-label">Shares</label>
-              <input
-                type="number"
-                className="compact-input"
-                value={currentShares}
-                onChange={(e) => setCurrentShares(Number(e.target.value))}
-                min={1}
-                step={1}
-              />
+              <div className="input-with-buttons">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => smartAdjust(currentShares, setCurrentShares, false)}
+                  className="adjust-btn"
+                >
+                  <Minus size={16} />
+                </Button>
+                <input
+                  type="number"
+                  className="compact-input"
+                  value={currentShares}
+                  onChange={(e) => setCurrentShares(Number(e.target.value))}
+                  min={1}
+                  step={1}
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => smartAdjust(currentShares, setCurrentShares, true)}
+                  className="adjust-btn"
+                >
+                  <Plus size={16} />
+                </Button>
+              </div>
             </div>
 
             <div className="compact-row">
               <label className="compact-label">Avg Price</label>
-              <div className="input-with-currency">
-                <span className="currency-symbol">{currency}</span>
-                <input
-                  type="number"
-                  className="compact-input with-currency"
-                  value={currentPrice}
-                  onChange={(e) => setCurrentPrice(Number(e.target.value))}
-                  min={0.01}
-                  step={0.01}
-                />
+              <div className="input-with-buttons">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => smartAdjust(currentPrice, setCurrentPrice, false)}
+                  className="adjust-btn"
+                >
+                  <Minus size={16} />
+                </Button>
+                <div className="input-with-currency">
+                  <span className="currency-symbol">{currency}</span>
+                  <input
+                    type="number"
+                    className="compact-input with-currency"
+                    value={currentPrice}
+                    onChange={(e) => setCurrentPrice(Number(e.target.value))}
+                    min={0.01}
+                    step={0.01}
+                  />
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => smartAdjust(currentPrice, setCurrentPrice, true)}
+                  className="adjust-btn"
+                >
+                  <Plus size={16} />
+                </Button>
               </div>
             </div>
 
@@ -192,16 +322,34 @@ const CostAveraging = () => {
 
             <div className="compact-row">
               <label className="compact-label">Target Avg</label>
-              <div className="input-with-currency">
-                <span className="currency-symbol">{currency}</span>
-                <input
-                  type="number"
-                  className="compact-input with-currency"
-                  value={targetPrice}
-                  onChange={(e) => setTargetPrice(Number(e.target.value))}
-                  min={0.01}
-                  step={0.01}
-                />
+              <div className="input-with-buttons">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => smartAdjust(targetPrice, setTargetPrice, false)}
+                  className="adjust-btn"
+                >
+                  <Minus size={16} />
+                </Button>
+                <div className="input-with-currency">
+                  <span className="currency-symbol">{currency}</span>
+                  <input
+                    type="number"
+                    className="compact-input with-currency"
+                    value={targetPrice}
+                    onChange={(e) => setTargetPrice(Number(e.target.value))}
+                    min={0.01}
+                    step={0.01}
+                  />
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => smartAdjust(targetPrice, setTargetPrice, true)}
+                  className="adjust-btn"
+                >
+                  <Plus size={16} />
+                </Button>
               </div>
             </div>
 
@@ -210,11 +358,13 @@ const CostAveraging = () => {
                 New Price
                 <span className="label-hint">(auto: -25%)</span>
               </label>
-              <div className="price-adjuster">
+              <div className="input-with-buttons">
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => adjustNewPrice(-0.1)}
+                  onClick={() => {
+                    smartAdjust(newPrice, handleNewPriceChange, false);
+                  }}
                   className="adjust-btn"
                 >
                   <Minus size={16} />
@@ -225,7 +375,7 @@ const CostAveraging = () => {
                     type="number"
                     className="compact-input with-currency centered"
                     value={newPrice}
-                    onChange={(e) => setNewPrice(Number(e.target.value))}
+                    onChange={(e) => handleNewPriceChange(Number(e.target.value))}
                     min={0.01}
                     step={0.01}
                   />
@@ -233,20 +383,14 @@ const CostAveraging = () => {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => adjustNewPrice(0.1)}
+                  onClick={() => {
+                    smartAdjust(newPrice, handleNewPriceChange, true);
+                  }}
                   className="adjust-btn"
                 >
                   <Plus size={16} />
                 </Button>
               </div>
-            </div>
-
-            <div className="quick-adjust">
-              <span className="quick-label">Quick:</span>
-              <Button variant="ghost" size="sm" onClick={() => adjustNewPrice(-0.5)}>-0.50</Button>
-              <Button variant="ghost" size="sm" onClick={() => adjustNewPrice(-0.1)}>-0.10</Button>
-              <Button variant="ghost" size="sm" onClick={() => adjustNewPrice(0.1)}>+0.10</Button>
-              <Button variant="ghost" size="sm" onClick={() => adjustNewPrice(0.5)}>+0.50</Button>
             </div>
           </div>
         </Card>
@@ -282,6 +426,18 @@ const CostAveraging = () => {
                   </div>
                 </div>
                 <CheckCircle2 className="check-icon" size={24} />
+              </div>
+
+              {/* Share/Copy Buttons */}
+              <div className="share-buttons">
+                <Button variant="outline" size="sm" onClick={shareResults}>
+                  <Share2 size={16} />
+                  Share
+                </Button>
+                <Button variant="outline" size="sm" onClick={copyToClipboard}>
+                  <Copy size={16} />
+                  Copy
+                </Button>
               </div>
 
               {/* Key Metrics */}
@@ -353,12 +509,13 @@ const CostAveraging = () => {
               <strong>Formula:</strong> New Shares = Current Shares × (Target - Current) / (New - Target)
             </p>
             <p className="info-text">
-              <strong>Example:</strong> 1,030 shares @ {currency}5.53, target {currency}5.00, new price {currency}4.50 → Buy ~111 shares
+              <strong>Smart Buttons:</strong> +/- buttons adjust values based on decimal places (1, 0.1, 0.01, or 0.001)
             </p>
             <div className="info-tips">
+              <div className="tip">• Starting values are randomized each time you load the page</div>
               <div className="tip">• New price defaults to 25% below current price</div>
-              <div className="tip">• Use +/- buttons for quick adjustments</div>
-              <div className="tip">• Target must be between current and new price</div>
+              <div className="tip">• Use +/- buttons for precise adjustments</div>
+              <div className="tip">• Share or copy results to clipboard</div>
             </div>
           </div>
         </Card>
