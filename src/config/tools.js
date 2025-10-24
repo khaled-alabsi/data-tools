@@ -1,11 +1,12 @@
 // Tools Registry
 // Add your tools here to register them in the landing page
 
-import { Activity, Layers } from 'lucide-react';
+import { Activity, Layers, Calculator } from 'lucide-react';
 
 // Import tool components here
 import NormalDistribution from '../tools/normal-distribution/NormalDistribution';
 import EllipticalDistribution from '../tools/elliptical-distribution/EllipticalDistribution';
+import CostAveraging from '../tools/cost-averaging/CostAveraging';
 
 // Tool Registry
 // Each tool should have:
@@ -38,6 +39,16 @@ export const tools = [
     component: EllipticalDistribution,
     category: 'statistics',
     tags: ['statistics', 'multivariate', 'mspc', 'elliptical', 'hotelling', 'mahalanobis', 'spc', 'quality-control'],
+  },
+  {
+    id: 'cost-averaging',
+    name: 'Cost Averaging Calculator',
+    description: 'Calculate how many shares to buy at a new price to reach your target average price. Perfect for averaging down or up your stock portfolio positions.',
+    icon: Calculator,
+    path: '/tools/cost-averaging',
+    component: CostAveraging,
+    category: 'utilities',
+    tags: ['finance', 'stocks', 'investing', 'portfolio', 'calculator', 'averaging'],
   },
   // Add more tools here as they are developed
   // Example:
