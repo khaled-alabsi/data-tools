@@ -42,13 +42,13 @@ export const tools = [
   },
   {
     id: 'cost-averaging',
-    name: 'Cost Averaging Calculator',
-    description: 'Calculate how many shares to buy at a new price to reach your target average price. Perfect for averaging down or up your stock portfolio positions.',
+    name: 'Portfolio Averaging Tool',
+    description: 'Smart calculator to find how many shares to buy to reach your target average price. Features smart defaults, quick adjustments, and mobile-friendly interface.',
     icon: Calculator,
     path: '/tools/cost-averaging',
     component: CostAveraging,
     category: 'utilities',
-    tags: ['finance', 'stocks', 'investing', 'portfolio', 'calculator', 'averaging'],
+    tags: ['finance', 'stocks', 'investing', 'portfolio', 'calculator', 'averaging', 'shares', 'DCA'],
   },
   // Add more tools here as they are developed
   // Example:
